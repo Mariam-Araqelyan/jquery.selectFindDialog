@@ -1,4 +1,4 @@
-$.widget("custom.lookup", {
+$.widget("custom.selectFindDialog", {
     options : {title : 'Localizar',
                animate : 'fade',
                showOnFocus : true},
