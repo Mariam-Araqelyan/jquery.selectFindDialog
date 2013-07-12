@@ -1,0 +1,142 @@
+$.widget("custom.lookup", {
+    options : {title : 'Localizar',
+               animate : 'fade',
+               showOnFocus : true},
+    _create : function(){
+        var self = this;
+        self.canShowOnFocus = true;
+        var table = "<div style='display:none' " +
+           ' id="popupLookup">' +
+            '<input type="text" style="width:100%;" />' + 
+            '<div>'+
+           ' <table> ' +
+           '     <tbody>'+
+           '         ' +
+           '     </tbody>'+
+           ' </table></div>      '+    
+       ' </div>"';
+        self.dialog = $(table).appendTo($('body'));
+        self.dialog.find('input').keypress(function(event){
+            var key = event.which;
+            switch(key){
+                case 13 : self._selectRow();
+                    break;
+                default :        
+self._find(this.value + String.fromCharCode(event.which));                    
+            }
+           
+        });
+        if(self.options.showOnFocus)
+        self.element.focus(function(){ 
+            if(!self.canShowOnFocus){
+                $(this).next().focus();//change the focus for the next element
+                return; 
+            }
+            self.canShowOnFocus = false;
+            self._show();            
+        }).focusout(function(){
+           
+        });
+        var button  = $("<div></div>").button(
+            { icons : { primary : 'ui-icon-search'}
+            })
+        .css({'height' :
+             self.element.css('height') + 'px',
+              width : '25px'})
+        .click(function(){ self._show();})
+        .insertAfter(this.element);
+        self.button = button;
+        self._loadData();
+        self._setupTable();
+    },
+    _find : function(text){
+        var self = this;
+        var rows = self.dialog.find('tr:contains(' + text + ')');
+        self.dialog.find('tr').hide();
+        rows.show();
+    },
+    _setupTable : function(){
+       var self = this;
+        self.dialog.find('table').css({'width' :  '100%'});
+        self.dialog.find('div').css({'height' : '200px',
+                         'overflow' : 'scroll'});
+       var rows = self.dialog.find('tr');
+        rows.addClass('ui-state-default')
+          .removeClass('ui-state-active')
+        .mouseenter(function(){
+           $(this).addClass('ui-state-hover');
+        })
+        .mouseleave(function(){
+          $(this).removeClass('ui-state-hover');
+        }).mousedown(function(){
+           $(this).removeClass('ui-state-hover')
+           .addClass('ui-state-active');
+        })
+        .mouseup(function(){
+           $(this).removeClass('ui-state-active');
+        });
+    },
+    _show : function(){
+        var self = this;
+        self.dialog.dialog({modal : true, 
+                            title : this.options.title,
+                            show : {effect : this.options.animate,
+                                    duration : 200},
+                            hide:{duration : 200,
+                                   effect : this.options.animate},
+                            position : {my : 'left top', 
+                                        at : 'right', 
+                                        of : this.element},
+                            close : function(){
+                                function _reset(){
+                                   self.canShowOnFocus = true;
+                                }
+                                self._reset();                                
+                                self.button.focus();
+                                setTimeout(_reset, 5000);
+                            }
+                           }); 
+    },
+    _reset : function(){
+        this.dialog.find('input').val('');
+        this.dialog.find('tr').show();
+    },
+    _loadData : function(){
+        var self = this;
+        var body = this.dialog.find('tbody');
+        body.empty();
+        this.element.find('option').each(
+            function(index , element){
+              body.append($('<tr><td>'  
+                          +element.value 
+                          + '</td><td>'  
+                          + element.innerText
+                          + '</td></tr>')
+                          .click(function(){
+                             self._selectRow($(this));
+                          })
+                         );
+            });
+    } ,
+    _selectRow : function(row){
+        if(!row) 
+            row = this.dialog.find('tr:visible')
+            .filter(':first');
+       var val = row.find('td').first()
+                    .text();
+       this._setValue(val);
+       this._close(); 
+    },
+    _setValue : function(value){
+        this.element.find('option')
+        .removeAttr('selected');
+        this.element.find('options[value=' +
+                          value
+                          + ']').attr('selected', 
+                                     'selected');
+        this.element.val(value);
+    },
+    _close : function(){
+       this.dialog.dialog('close');   
+    }
+});
