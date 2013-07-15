@@ -1,7 +1,16 @@
+/**
+ * jquery.selectFindDialog v0.1.0pre - A jquery plugin to create a dialog search for a select object
+ *
+ * http://edgardleal@blogspot.com
+ *
+ * Released under the MIT license.
+ */
+
 $.widget("custom.selectFindDialog", {
     options : {title : 'Localizar',
                animate : 'fade',
-               showOnFocus : true},
+               showOnFocus : true,
+               showSelect : true},
     _create : function(){
         var self = this;
         self.canShowOnFocus = true;
@@ -100,6 +109,8 @@ self._find(this.value + String.fromCharCode(event.which));
     _reset : function(){
         this.dialog.find('input').val('');
         this.dialog.find('tr').show();
+        if(!this.options.showSelect)
+          this.element.hide();
     },
     _loadData : function(){
         var self = this;
